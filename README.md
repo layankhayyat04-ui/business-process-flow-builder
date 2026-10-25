@@ -2,18 +2,23 @@
 
 <br/>
 
-# Business Process Flow Builder
-
-**A drag-and-drop diagramming tool for mapping business workflows**
-
-Add shapes, connect them with arrows, drag to rearrange — arrows follow automatically. Built entirely in the browser with plain JavaScript and native SVG. No frameworks, no dependencies.
+<img src="https://capsule-render.vercel.app/api?type=waving&color=6366F1&height=200&section=header&text=Business%20Process%20Flow%20Builder&fontSize=30&fontColor=ffffff&fontAlignY=38&desc=Drag%20%C2%B7%20Drop%20%C2%B7%20Connect%20%C2%B7%20Export&descAlignY=58&descSize=18&animation=fadeIn" width="100%"/>
 
 <br/>
 
-![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
-![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
-![SVG](https://img.shields.io/badge/SVG-FFB13B?style=for-the-badge&logo=svg&logoColor=black)
+<p align="center">
+  <img src="https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white"/>
+  <img src="https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white"/>
+  <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black"/>
+  <img src="https://img.shields.io/badge/SVG-FFB13B?style=for-the-badge&logo=svg&logoColor=black"/>
+  <img src="https://img.shields.io/badge/Zero_Dependencies-059669?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/Status-Complete-6366F1?style=for-the-badge"/>
+</p>
+
+<p align="center">
+  <strong>A fully interactive, browser-based flow diagram builder — no frameworks, no libraries, no server.</strong><br/>
+  Drag nodes from the sidebar, connect them with curved SVG arrows, rename inline, and export as SVG.
+</p>
 
 <br/>
 
@@ -21,105 +26,188 @@ Add shapes, connect them with arrows, drag to rearrange — arrows follow automa
 
 ---
 
-## Overview
+## ✨ Overview
 
-The Business Process Flow Builder is a visual diagramming tool for mapping out how a business process actually works — step by step, including the decision points where it branches.
+A **single self-contained HTML file** that turns any browser into a professional flow-diagramming tool. Built from scratch in vanilla JavaScript — every interaction, every SVG arrow, every port connection is written by hand with zero runtime dependencies.
 
-Instead of describing a process in a paragraph of text, you drag shapes onto a canvas, connect them with arrows, and end up with a clear, shareable diagram of the whole workflow.
-
-It runs **entirely in the browser** — no backend, no database, no installation. Every shape, drag, and connection is handled with plain JavaScript. Arrows are drawn live with SVG so they always point cleanly between shapes, even after you move them.
+Open `index.html` → start diagramming. No install, no build step, no server.
 
 ---
 
-## Demo
+## 🖥️ Features
 
-A complete order-fulfillment process, built with the tool:
+### 🎯 Six Node Types — Drag Any One onto the Canvas
 
-```
-Order Received → Check Inventory → In Stock?
-                                        ↓ Yes → Ship Order
-                                        ↓ No  → Notify Backorder
-                                                      → Order Complete
-```
+| Node | Icon | Use Case |
+|---|---|---|
+| **Start** | 🟢 | Entry point of the process |
+| **Process** | ⬜ | An action, task, or step |
+| **Decision** | 🔷 | Yes/No or conditional branch |
+| **Data** | 🗄 | Input, output, or data store |
+| **Delay** | ⏳ | Wait state or timer |
+| **End** | 🔴 | Process terminator |
 
----
+### 🔗 Port-Based Connection System
 
-## Features
-
-### 🛠️ The Toolbar
-
-Every action lives in one row:
-
-| Button | Action |
-|---|---|
-| `+ Start / End` | Add a rounded start or end node |
-| `+ Process Step` | Add a rectangular process step |
-| `+ Decision` | Add a diamond decision point |
-| `Connect Steps` | Toggle connect mode — click two shapes to draw an arrow |
-| `Delete Selected` | Remove selected shape and all its connected arrows |
-| `Clear Canvas` | Reset everything to start fresh |
-
-### 🔷 Three Shape Types
-
-- **Start / End** — rounded rectangle, marks where a process begins or finishes
-- **Process Step** — plain rectangle, represents a task or action
-- **Decision** — diamond, represents a yes/no branch point
+Each node exposes **4 connection ports** (right, left, top, bottom). Click one port, then click a target port — a smooth **cubic Bézier curve** draws automatically between them.
 
 ### ✏️ Inline Label Editing
 
-Double-click any shape's label to edit it directly. Type a new name and press Enter. No modal dialogs, no separate edit panel.
+Double-click any node's title or body text to edit in place — `contenteditable` with zero boilerplate. No modal, no form.
 
-### 🔗 One-Click Connections
+### 🖱️ Full Canvas Interaction
 
-Toggle Connect mode, click a starting shape, then click the destination — an arrow is drawn automatically. The toolbar shows a hint that guides each step.
+| Action | How |
+|---|---|
+| **Move a node** | Click and drag |
+| **Pan the canvas** | Shift + drag, or middle-click |
+| **Zoom in/out** | Scroll wheel |
+| **Delete a node** | Right-click → Delete, or `Delete` key |
+| **Delete a connection** | Double-click the arrow |
+| **Duplicate a node** | Right-click → Duplicate |
 
-### 🎯 Live Arrow Routing
+### 💾 SVG Export
 
-Arrows connect edge-to-edge, not center-to-center. When you drag a shape to a new position, every connected arrow updates instantly — the diagram never looks broken mid-edit.
+Exports the entire diagram as a clean, self-contained `.svg` file — ready for Figma, Illustrator, or a slide deck.
 
-### 🗑️ Clean Editing
+### ⚡ Auto-Layout
 
-Click any shape to select it (highlighted with a pink outline). Delete Selected removes it along with all connected arrows, leaving the rest of the diagram intact.
+One-click grid layout that arranges all nodes into a clean, readable grid.
 
----
+### 🌑 Dark-First Design
 
-## Technical Highlights
-
-This project deliberately avoids any library or framework to demonstrate the raw mechanics:
-
-- **Drag-and-drop** — implemented from scratch with `mousedown`, `mousemove`, `mouseup` event listeners and coordinate tracking
-- **Live SVG arrows** — recalculated on every shape move; each arrow connects the closest edges of its two shapes
-- **Inline editing** — a hidden `<input>` positioned over the shape's label, shown on double-click
-- **Connection state machine** — Connect mode tracks the "first click" and "second click" in JavaScript state before drawing the arrow
-
----
-
-## Why No Framework
-
-Built with plain JavaScript and native SVG to demonstrate the underlying mechanics that a library would otherwise hide: drag tracking, coordinate math for arrows, DOM event handling. Keeps it lightweight, dependency-free, and easy to open and run anywhere.
+Full dark UI with an indigo accent (`#6366F1`), dot-grid canvas background, and color-coded node borders — Start (green), End (red), Decision (amber), Process (indigo), Data (cyan), Delay (violet).
 
 ---
 
-## What's Next
+## 🚀 Getting Started
+
+```bash
+# Clone
+git clone https://github.com/layankhayyat04-ui/business-process-flow-builder.git
+cd business-process-flow-builder
+
+# Open — that's it
+open index.html
+```
+
+Or just download `index.html` and open it in any browser.
+
+---
+
+## 🧩 Key Code
+
+### Cubic Bézier Arrow Routing
+
+```javascript
+function cubicPath(a, b, aS, bS) {
+  const d = 80; // control-point offset
+  let c1x = a.x, c1y = a.y;
+  let c2x = b.x, c2y = b.y;
+
+  if (aS === 'right')  c1x += d;
+  if (aS === 'left')   c1x -= d;
+  if (aS === 'bottom') c1y += d;
+  if (aS === 'top')    c1y -= d;
+
+  if (bS === 'right')  c2x += d;
+  if (bS === 'left')   c2x -= d;
+  if (bS === 'bottom') c2y += d;
+  if (bS === 'top')    c2y -= d;
+
+  return `M${a.x},${a.y} C${c1x},${c1y} ${c2x},${c2y} ${b.x},${b.y}`;
+}
+```
+
+### Port-Click Connection State Machine
+
+```javascript
+function portMouseDown(e) {
+  e.stopPropagation();
+  const nid  = parseInt(e.currentTarget.dataset.nid);
+  const side = e.currentTarget.dataset.side;
+
+  if (!connectFrom) {
+    // First click — start a connection
+    connectFrom = { nodeId: nid, side };
+    e.currentTarget.classList.add('active');
+  } else {
+    // Second click — complete the connection
+    if (connectFrom.nodeId !== nid) {
+      addEdge(connectFrom.nodeId, connectFrom.side, nid, side);
+    }
+    document.querySelectorAll('.port.active')
+      .forEach(p => p.classList.remove('active'));
+    connectFrom = null;
+  }
+}
+```
+
+### Drag Node with Canvas-Space Coordinate Transform
+
+```javascript
+function screenToCanvas(sx, sy) {
+  const r = wrap.getBoundingClientRect();
+  return {
+    x: (sx - r.left - pan.x) / zoom,
+    y: (sy - r.top  - pan.y) / zoom,
+  };
+}
+
+function canvasMouseMove(e) {
+  if (draggingNode) {
+    const pos = screenToCanvas(e.clientX, e.clientY);
+    const n   = nodes.find(n => n.id === draggingNode);
+    n.x = pos.x - dragOffset.x;
+    n.y = pos.y - dragOffset.y;
+    // Update DOM + re-render all edges
+    const el = document.getElementById('node-' + draggingNode);
+    el.style.left = n.x + 'px';
+    el.style.top  = n.y + 'px';
+    renderEdges();
+  }
+}
+```
+
+---
+
+## 🗂️ Project Structure
+
+```
+business-process-flow-builder/
+└── index.html     # Entire app — HTML + CSS + JS in one self-contained file
+                   # ~500 lines CSS  ·  ~400 lines JS  ·  zero dependencies
+```
+
+---
+
+## 🗺️ What's Next
 
 | Feature | Description |
 |---|---|
-| Save & Reload | Store a diagram in the browser or export/import as a file |
-| Export as Image or PDF | One-click download of the finished diagram |
-| More Shape Types | Swimlanes, sub-processes, annotations |
-| Undo / Redo | Step backward and forward through changes |
+| LocalStorage Persistence | Auto-save diagram state across sessions |
+| JSON Import/Export | Save and reload diagrams as structured JSON |
+| Swimlanes | Organize nodes into labeled lanes |
+| Connection Labels | Add text labels to arrows |
+| Undo / Redo Stack | Full history with Ctrl+Z / Ctrl+Y |
+| Minimap | Overview panel for large diagrams |
 
 ---
 
-## Project Status
+<div align="center">
 
-This is a **real, working tool** — every screenshot in the walkthrough shows the live running application, not a mockup. The core diagramming loop (add, connect, label, move, delete) is fully functional.
+<br/>
 
----
-
-## About
-
-Built by **Layan Khayyat**
+**Built by [Layan Khayyat](https://layankhayyat.com)**<br/>
 B.Sc. Business Information Technology · Princess Sumaya University for Technology (PSUT)
 
-[Portfolio](https://layankhayyat.com) · [LinkedIn](https://linkedin.com/in/layankhayyat)
+<br/>
+
+[![Portfolio](https://img.shields.io/badge/Portfolio-layankhayyat.com-6366F1?style=for-the-badge&logo=vercel&logoColor=white)](https://layankhayyat.com)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/layankhayyat)
+
+<br/>
+
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0891B2&height=100&section=footer" width="100%"/>
+
+</div>

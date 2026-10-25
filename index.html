@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Business Process Flow Builder</title>
+<style>
+  :root {
+    --bg: #0F172A;
+    --surface: #1E293B;
+    --surface2: #334155;
+    --border: #475569;
+    --accent: #6366F1;
+    --accent2: #8B5CF6;
+    --green: #10B981;
+    --amber: #F59E0B;
+    --red: #EF4444;
+    --cyan: #06B6D4;
+    --text: #F1F5F9;
+    --muted: #94A3B8;
+    --shadow: rgba(0,0,0,.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ── TOP BAR ── */
+  #topbar {
+    height: 52px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+  #topbar .logo {
+    font-weight: 700;
+    font-size: .95rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  #topbar .logo span { color: var(--accent); }
+  .sep { width: 1px; height: 24px; background: var(--border); }
+  #topbar button {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: .8rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background .15s;
+  }
+  #topbar button:hover { background: var(--border); }
+  #topbar button.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    font-weight: 600;
+  }
+  #topbar button.primary:hover { background: var(--accent2); }
+  .spacer { flex: 1; }
+  #zoom-label {
+    font-size: .78rem;
+    color: var(--muted);
+    min-width: 36px;
+    text-align: center;
+  }
+
+  /* ── MAIN LAYOUT ── */
+  #layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── LEFT PANEL ── */
+  #panel {
+    width: 200px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+  #panel h3 {
+    font-size: .7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--muted);
+    padding: 12px 14px 6px;
+  }
+  .node-template {
+    margin: 4px 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    cursor: grab;
+    font-size: .82rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: border-color .15s, background .15s;
+    background: var(--surface2);
+  }
+  .node-template:hover { border-color: var(--accent); background: #1e2a40; }
+  .node-template .icon { font-size: 1rem; }
+  .node-template .info { display: flex; flex-direction: column; }
+  .node-template .info .name { font-weight: 600; font-size: .8rem; }
+  .node-template .info .sub { font-size: .7rem; color: var(--muted); }
+
+  #panel .section-gap { height: 12px; }
+
+  /* ── CANVAS ── */
+  #canvas-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(circle, #2563EB11 1px, transparent 1px);
+    background-size: 28px 28px;
+    cursor: default;
+  }
+  #canvas {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    transform-origin: 0 0;
+  }
+
+  /* ── SVG ARROWS ── */
+  #arrows-svg {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+  }
+  .arrow-path {
+    fill: none;
+    stroke: var(--muted);
+    stroke-width: 2;
+    marker-end: url(#arrowhead);
+    pointer-events: stroke;
+    cursor: pointer;
+  }
+  .arrow-path:hover { stroke: var(--accent); }
+  .arrow-path.selected { stroke: var(--accent2); }
+
+  /* ── NODES ── */
+  .node {
+    position: absolute;
+    min-width: 140px;
+    max-width: 180px;
+    border-radius: 10px;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    cursor: move;
+    transition: border-color .15s, box-shadow .15s;
+    box-shadow: 0 4px 16px var(--shadow);
+  }
+  .node:hover { border-color: var(--accent); }
+  .node.selected {
+    border-color: var(--accent2);
+    box-shadow: 0 0 0 3px rgba(139,92,246,.25), 0 4px 16px var(--shadow);
+  }
+  .node-header {
+    padding: 8px 10px 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid var(--border);
+    border-radius: 8px 8px 0 0;
+  }
+  .node-icon { font-size: 1rem; }
+  .node-title {
+    font-size: .8rem;
+    font-weight: 600;
+    flex: 1;
+    outline: none;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    cursor: text;
+    width: 100%;
+  }
+  .node-title:focus { color: #fff; }
+  .node-body {
+    padding: 6px 10px 8px;
+    font-size: .75rem;
+    color: var(--muted);
+    outline: none;
+    cursor: text;
+    min-height: 28px;
+    line-height: 1.5;
+  }
+  .node-body:focus { color: var(--text); }
+
+  /* Port dots */
+  .port {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 2px solid var(--border);
+    position: absolute;
+    cursor: crosshair;
+    transition: background .1s, border-color .1s, transform .1s;
+    z-index: 5;
+  }
+  .port:hover, .port.active {
+    background: var(--accent);
+    border-color: var(--accent2);
+    transform: scale(1.4);
+  }
+  .port.right  { right: -6px; top: 50%; transform: translateY(-50%); }
+  .port.right:hover  { transform: translateY(-50%) scale(1.4); }
+  .port.left   { left: -6px; top: 50%; transform: translateY(-50%); }
+  .port.left:hover   { transform: translateY(-50%) scale(1.4); }
+  .port.bottom { bottom: -6px; left: 50%; transform: translateX(-50%); }
+  .port.bottom:hover { transform: translateX(-50%) scale(1.4); }
+  .port.top    { top: -6px; left: 50%; transform: translateX(-50%); }
+  .port.top:hover    { transform: translateX(-50%) scale(1.4); }
+
+  /* Node type colors */
+  .node[data-type="start"] .node-header  { background: #064e3b; border-color: #065f46; }
+  .node[data-type="start"]               { border-color: var(--green); }
+  .node[data-type="end"] .node-header    { background: #450a0a; }
+  .node[data-type="end"]                 { border-color: var(--red); }
+  .node[data-type="decision"] .node-header { background: #431407; }
+  .node[data-type="decision"]            { border-color: var(--amber); }
+  .node[data-type="process"] .node-header { background: #1e1b4b; }
+  .node[data-type="process"]             { border-color: var(--accent); }
+  .node[data-type="data"] .node-header   { background: #0c2a40; }
+  .node[data-type="data"]                { border-color: var(--cyan); }
+  .node[data-type="delay"] .node-header  { background: #2d1b69; }
+  .node[data-type="delay"]               { border-color: var(--accent2); }
+
+  /* ── CONTEXT MENU ── */
+  #ctx-menu {
+    position: fixed;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 8px 32px var(--shadow);
+    padding: 4px 0;
+    z-index: 100;
+    min-width: 160px;
+    display: none;
+  }
+  #ctx-menu.visible { display: block; }
+  #ctx-menu button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 14px;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-size: .82rem;
+    cursor: pointer;
+    text-align: left;
+  }
+  #ctx-menu button:hover { background: var(--surface2); }
+  #ctx-menu button.danger { color: var(--red); }
+  #ctx-menu .menu-sep { height: 1px; background: var(--border); margin: 4px 0; }
+
+  /* ── STATUS BAR ── */
+  #statusbar {
+    height: 26px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 0 14px;
+    font-size: .72rem;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  #statusbar .indicator { display: flex; align-items: center; gap: 4px; }
+  #statusbar .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
+  /* ── DRAG GHOST ── */
+  #ghost {
+    position: fixed;
+    pointer-events: none;
+    z-index: 999;
+    opacity: .75;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- Top Bar -->
+<div id="topbar">
+  <div class="logo">⬡ <span>Flow</span>Builder</div>
+  <div class="sep"></div>
+  <button onclick="clearAll()" title="Clear canvas">🗑 Clear</button>
+  <button onclick="autoLayout()" title="Auto arrange nodes">⚡ Auto-layout</button>
+  <button onclick="exportSVG()" title="Export as SVG">↓ Export SVG</button>
+  <div class="spacer"></div>
+  <button onclick="zoomOut()">−</button>
+  <div id="zoom-label">100%</div>
+  <button onclick="zoomIn()">+</button>
+  <button onclick="zoomReset()">⊙</button>
+  <div class="sep"></div>
+  <button class="primary" onclick="addNodeFromBtn('process')">+ Add Node</button>
+</div>
+
+<!-- Main Layout -->
+<div id="layout">
+
+  <!-- Left Panel -->
+  <div id="panel">
+    <h3>Node Types</h3>
+
+    <div class="node-template" draggable="true" data-type="start"
+         ondragstart="panelDragStart(event,'start')">
+      <span class="icon">🟢</span>
+      <div class="info">
+        <span class="name">Start</span>
+        <span class="sub">Entry point</span>
+      </div>
+    </div>
+
+    <div class="node-template" draggable="true" data-type="process"
+         ondragstart="panelDragStart(event,'process')">
+      <span class="icon">⬜</span>
+      <div class="info">
+        <span class="name">Process</span>
+        <span class="sub">Action / task</span>
+      </div>
+    </div>
+
+    <div class="node-template" draggable="true" data-type="decision"
+         ondragstart="panelDragStart(event,'decision')">
+      <span class="icon">🔷</span>
+      <div class="info">
+        <span class="name">Decision</span>
+        <span class="sub">Yes / No branch</span>
+      </div>
+    </div>
+
+    <div class="node-template" draggable="true" data-type="data"
+         ondragstart="panelDragStart(event,'data')">
+      <span class="icon">🗄</span>
+      <div class="info">
+        <span class="name">Data</span>
+        <span class="sub">Input / output</span>
+      </div>
+    </div>
+
+    <div class="node-template" draggable="true" data-type="delay"
+         ondragstart="panelDragStart(event,'delay')">
+      <span class="icon">⏳</span>
+      <div class="info">
+        <span class="name">Delay</span>
+        <span class="sub">Wait / timer</span>
+      </div>
+    </div>
+
+    <div class="node-template" draggable="true" data-type="end"
+         ondragstart="panelDragStart(event,'end')">
+      <span class="icon">🔴</span>
+      <div class="info">
+        <span class="name">End</span>
+        <span class="sub">Terminator</span>
+      </div>
+    </div>
+
+    <div class="section-gap"></div>
+    <h3>Tips</h3>
+    <div style="padding:0 12px 12px; font-size:.72rem; color:var(--muted); line-height:1.7">
+      • Drag nodes onto canvas<br>
+      • Click port → click port to connect<br>
+      • Double-click to edit labels<br>
+      • Right-click node for options<br>
+      • Scroll to zoom<br>
+      • Space+drag to pan
+    </div>
+  </div>
+
+  <!-- Canvas -->
+  <div id="canvas-wrap"
+       ondrop="canvasDrop(event)"
+       ondragover="e=>e.preventDefault()"
+       onmousedown="canvasMouseDown(event)"
+       onmousemove="canvasMouseMove(event)"
+       onmouseup="canvasMouseUp(event)"
+       onwheel="canvasWheel(event)"
+       oncontextmenu="e=>e.preventDefault()">
+
+    <svg id="arrows-svg">
+      <defs>
+        <marker id="arrowhead" markerWidth="8" markerHeight="6"
+                refX="6" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#94A3B8"/>
+        </marker>
+        <marker id="arrowhead-sel" markerWidth="8" markerHeight="6"
+                refX="6" refY="3" orient="auto">
+          <polygon points="0 0, 8 3, 0 6" fill="#8B5CF6"/>
+        </marker>
+      </defs>
+    </svg>
+
+    <div id="canvas"></div>
+  </div>
+</div>
+
+<!-- Status Bar -->
+<div id="statusbar">
+  <div class="indicator"><div class="dot"></div> Ready</div>
+  <span id="node-count">0 nodes</span>
+  <span id="edge-count">0 connections</span>
+  <span style="margin-left:auto">Drag from panel · Click ports to connect · Right-click to delete</span>
+</div>
+
+<!-- Context Menu -->
+<div id="ctx-menu">
+  <button onclick="ctxDuplicate()">⧉ Duplicate</button>
+  <button onclick="ctxBringFront()">↑ Bring to Front</button>
+  <div class="menu-sep"></div>
+  <button onclick="ctxDelete()" class="danger">✕ Delete Node</button>
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────
+let nodes = [];
+let edges = [];
+let zoom  = 1;
+let pan   = { x: 0, y: 0 };
+let nodeIdCounter = 0;
+let edgeIdCounter = 0;
+let selectedNodeId  = null;
+let selectedEdgeId  = null;
+
+// Drag-to-move
+let draggingNode  = null;
+let dragOffset    = { x: 0, y: 0 };
+
+// Port connection
+let connectFrom = null; // { nodeId, port }
+
+// Pan
+let panning   = false;
+let panStart  = { x: 0, y: 0 };
+let panOrigin = { x: 0, y: 0 };
+
+// Panel drag
+let panelDragType = null;
+
+const wrap  = document.getElementById('canvas-wrap');
+const cvs   = document.getElementById('canvas');
+const svg   = document.getElementById('arrows-svg');
+const ctx   = document.getElementById('ctx-menu');
+let ctxNodeId = null;
+
+// ─── Node Definitions ────────────────────────────────
+const NODE_DEFS = {
+  start:    { icon: '🟢', label: 'Start',    sub: 'Entry point'   },
+  process:  { icon: '⬜', label: 'Process',  sub: 'Click to edit' },
+  decision: { icon: '🔷', label: 'Decision', sub: 'Yes / No?'     },
+  data:     { icon: '🗄', label: 'Data',     sub: 'Input/Output'  },
+  delay:    { icon: '⏳', label: 'Delay',    sub: 'Wait…'         },
+  end:      { icon: '🔴', label: 'End',      sub: 'Terminator'    },
+};
+
+// ─── Coord helpers ───────────────────────────────────
+function screenToCanvas(sx, sy) {
+  const r = wrap.getBoundingClientRect();
+  return {
+    x: (sx - r.left - pan.x) / zoom,
+    y: (sy - r.top  - pan.y) / zoom,
+  };
+}
+function applyTransform() {
+  cvs.style.transform  = `translate(${pan.x}px,${pan.y}px) scale(${zoom})`;
+  svg.style.transform  = `translate(${pan.x}px,${pan.y}px) scale(${zoom})`;
+  document.getElementById('zoom-label').textContent = Math.round(zoom * 100) + '%';
+}
+
+// ─── Create Node ─────────────────────────────────────
+function createNode(type, x, y) {
+  const def = NODE_DEFS[type] || NODE_DEFS.process;
+  const id  = ++nodeIdCounter;
+  const node = { id, type, x, y, label: def.label, sub: def.sub };
+  nodes.push(node);
+
+  const el = document.createElement('div');
+  el.className = 'node';
+  el.id = 'node-' + id;
+  el.dataset.id   = id;
+  el.dataset.type = type;
+  el.style.left   = x + 'px';
+  el.style.top    = y + 'px';
+
+  el.innerHTML = `
+    <div class="node-header">
+      <span class="node-icon">${def.icon}</span>
+      <div class="node-title" contenteditable="true" spellcheck="false">${def.label}</div>
+    </div>
+    <div class="node-body" contenteditable="true" spellcheck="false">${def.sub}</div>
+    <div class="port right"  data-nid="${id}" data-side="right"></div>
+    <div class="port left"   data-nid="${id}" data-side="left"></div>
+    <div class="port bottom" data-nid="${id}" data-side="bottom"></div>
+    <div class="port top"    data-nid="${id}" data-side="top"></div>
+  `;
+
+  // Drag node
+  el.addEventListener('mousedown', nodeMouseDown);
+
+  // Port clicks
+  el.querySelectorAll('.port').forEach(p => {
+    p.addEventListener('mousedown', portMouseDown);
+  });
+
+  // Right-click
+  el.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    ctxNodeId = id;
+    showCtxMenu(e.clientX, e.clientY);
+  });
+
+  cvs.appendChild(el);
+  updateStatus();
+  return node;
+}
+
+// ─── Node Drag ───────────────────────────────────────
+function nodeMouseDown(e) {
+  if (e.button !== 0) return;
+  if (e.target.classList.contains('port')) return;
+  if (e.target.contentEditable === 'true' && document.activeElement === e.target) return;
+
+  e.stopPropagation();
+  const el = e.currentTarget;
+  const id = parseInt(el.dataset.id);
+  selectNode(id);
+
+  const r = el.getBoundingClientRect();
+  draggingNode = id;
+  dragOffset = {
+    x: (e.clientX - r.left) / zoom,
+    y: (e.clientY - r.top)  / zoom,
+  };
+}
+
+function selectNode(id) {
+  if (selectedNodeId) {
+    const prev = document.getElementById('node-' + selectedNodeId);
+    if (prev) prev.classList.remove('selected');
+  }
+  selectedNodeId = id;
+  if (id) {
+    const el = document.getElementById('node-' + id);
+    if (el) el.classList.add('selected');
+  }
+  hideCtxMenu();
+}
+
+// ─── Port Connection ─────────────────────────────────
+function portMouseDown(e) {
+  e.stopPropagation();
+  e.preventDefault();
+  const nid  = parseInt(e.currentTarget.dataset.nid);
+  const side = e.currentTarget.dataset.side;
+
+  if (!connectFrom) {
+    connectFrom = { nodeId: nid, side };
+    e.currentTarget.classList.add('active');
+  } else {
+    if (connectFrom.nodeId !== nid) {
+      addEdge(connectFrom.nodeId, connectFrom.side, nid, side);
+    }
+    // clear
+    document.querySelectorAll('.port.active').forEach(p => p.classList.remove('active'));
+    connectFrom = null;
+  }
+}
+
+function addEdge(fromId, fromSide, toId, toSide) {
+  // Prevent duplicate
+  const dup = edges.find(e =>
+    e.fromId === fromId && e.fromSide === fromSide &&
+    e.toId   === toId   && e.toSide   === toSide
+  );
+  if (dup) return;
+
+  const id = ++edgeIdCounter;
+  edges.push({ id, fromId, fromSide, toId, toSide });
+  renderEdges();
+  updateStatus();
+}
+
+// ─── Render Edges ────────────────────────────────────
+function getPortCenter(nodeId, side) {
+  const n  = nodes.find(n => n.id === nodeId);
+  const el = document.getElementById('node-' + nodeId);
+  if (!n || !el) return { x: 0, y: 0 };
+  const w = el.offsetWidth;
+  const h = el.offsetHeight;
+  switch (side) {
+    case 'right':  return { x: n.x + w,     y: n.y + h / 2 };
+    case 'left':   return { x: n.x,          y: n.y + h / 2 };
+    case 'bottom': return { x: n.x + w / 2,  y: n.y + h };
+    case 'top':    return { x: n.x + w / 2,  y: n.y };
+    default:       return { x: n.x + w / 2,  y: n.y + h / 2 };
+  }
+}
+
+function cubicPath(a, b, aS, bS) {
+  const d = 80;
+  let c1x = a.x, c1y = a.y, c2x = b.x, c2y = b.y;
+  if (aS === 'right')  c1x += d;
+  if (aS === 'left')   c1x -= d;
+  if (aS === 'bottom') c1y += d;
+  if (aS === 'top')    c1y -= d;
+  if (bS === 'right')  c2x += d;
+  if (bS === 'left')   c2x -= d;
+  if (bS === 'bottom') c2y += d;
+  if (bS === 'top')    c2y -= d;
+  return `M${a.x},${a.y} C${c1x},${c1y} ${c2x},${c2y} ${b.x},${b.y}`;
+}
+
+function renderEdges() {
+  // Remove old paths
+  svg.querySelectorAll('.arrow-path').forEach(p => p.remove());
+
+  for (const edge of edges) {
+    const a = getPortCenter(edge.fromId, edge.fromSide);
+    const b = getPortCenter(edge.toId,   edge.toSide);
+    const d = cubicPath(a, b, edge.fromSide, edge.toSide);
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', d);
+    path.classList.add('arrow-path');
+    if (edge.id === selectedEdgeId) path.classList.add('selected');
+    path.dataset.id = edge.id;
+    path.addEventListener('click', e => {
+      e.stopPropagation();
+      selectEdge(edge.id);
+    });
+    path.addEventListener('dblclick', e => {
+      e.stopPropagation();
+      deleteEdge(edge.id);
+    });
+    svg.appendChild(path);
+  }
+}
+
+function selectEdge(id) {
+  selectedEdgeId = id;
+  renderEdges();
+}
+
+function deleteEdge(id) {
+  edges = edges.filter(e => e.id !== id);
+  selectedEdgeId = null;
+  renderEdges();
+  updateStatus();
+}
+
+// ─── Canvas Mouse ─────────────────────────────────────
+function canvasMouseDown(e) {
+  hideCtxMenu();
+  if (e.button === 1 || (e.button === 0 && e.shiftKey)) {
+    panning   = true;
+    panStart  = { x: e.clientX, y: e.clientY };
+    panOrigin = { x: pan.x, y: pan.y };
+    e.preventDefault();
+    return;
+  }
+  if (e.button === 0) {
+    selectNode(null);
+    selectedEdgeId = null;
+    if (connectFrom) {
+      document.querySelectorAll('.port.active').forEach(p => p.classList.remove('active'));
+      connectFrom = null;
+    }
+    renderEdges();
+  }
+}
+
+function canvasMouseMove(e) {
+  if (panning) {
+    pan.x = panOrigin.x + e.clientX - panStart.x;
+    pan.y = panOrigin.y + e.clientY - panStart.y;
+    applyTransform();
+    return;
+  }
+  if (draggingNode) {
+    const pos = screenToCanvas(e.clientX, e.clientY);
+    const n   = nodes.find(n => n.id === draggingNode);
+    if (n) {
+      n.x = pos.x - dragOffset.x;
+      n.y = pos.y - dragOffset.y;
+      const el = document.getElementById('node-' + draggingNode);
+      if (el) { el.style.left = n.x + 'px'; el.style.top = n.y + 'px'; }
+      renderEdges();
+    }
+  }
+}
+
+function canvasMouseUp(e) {
+  panning = false;
+  draggingNode = null;
+}
+
+function canvasWheel(e) {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  zoom = Math.min(3, Math.max(0.2, zoom * delta));
+  applyTransform();
+}
+
+// ─── Panel Drag ──────────────────────────────────────
+function panelDragStart(e, type) {
+  panelDragType = type;
+  e.dataTransfer.effectAllowed = 'copy';
+}
+
+function canvasDrop(e) {
+  e.preventDefault();
+  const pos = screenToCanvas(e.clientX, e.clientY);
+  if (panelDragType) {
+    createNode(panelDragType, pos.x - 75, pos.y - 30);
+    panelDragType = null;
+  }
+}
+
+// ─── Zoom Controls ───────────────────────────────────
+function zoomIn()    { zoom = Math.min(3, zoom * 1.2);   applyTransform(); }
+function zoomOut()   { zoom = Math.max(0.2, zoom / 1.2); applyTransform(); }
+function zoomReset() { zoom = 1; pan = { x: 0, y: 0 };   applyTransform(); }
+
+// ─── Context Menu ────────────────────────────────────
+function showCtxMenu(x, y) {
+  ctx.style.left = x + 'px';
+  ctx.style.top  = y + 'px';
+  ctx.classList.add('visible');
+}
+function hideCtxMenu() { ctx.classList.remove('visible'); }
+
+function ctxDelete() {
+  if (ctxNodeId == null) return;
+  edges = edges.filter(e => e.fromId !== ctxNodeId && e.toId !== ctxNodeId);
+  nodes = nodes.filter(n => n.id !== ctxNodeId);
+  const el = document.getElementById('node-' + ctxNodeId);
+  if (el) el.remove();
+  renderEdges();
+  updateStatus();
+  hideCtxMenu();
+  ctxNodeId = null;
+}
+
+function ctxDuplicate() {
+  if (ctxNodeId == null) return;
+  const n = nodes.find(n => n.id === ctxNodeId);
+  if (n) createNode(n.type, n.x + 30, n.y + 30);
+  hideCtxMenu();
+}
+
+function ctxBringFront() {
+  if (ctxNodeId == null) return;
+  const el = document.getElementById('node-' + ctxNodeId);
+  if (el) cvs.appendChild(el);
+  hideCtxMenu();
+}
+
+// ─── Add from Button ─────────────────────────────────
+function addNodeFromBtn(type) {
+  const c = screenToCanvas(wrap.clientWidth / 2, wrap.clientHeight / 2);
+  createNode(type, c.x - 75, c.y - 30);
+}
+
+// ─── Clear / Auto-layout ─────────────────────────────
+function clearAll() {
+  if (!confirm('Clear the entire canvas?')) return;
+  nodes = []; edges = [];
+  cvs.innerHTML = '';
+  svg.querySelectorAll('.arrow-path').forEach(p => p.remove());
+  nodeIdCounter = edgeIdCounter = 0;
+  updateStatus();
+}
+
+function autoLayout() {
+  if (!nodes.length) return;
+  const cols = Math.ceil(Math.sqrt(nodes.length));
+  const W = 220, H = 120;
+  nodes.forEach((n, i) => {
+    n.x = (i % cols) * W + 40;
+    n.y = Math.floor(i / cols) * H + 40;
+    const el = document.getElementById('node-' + n.id);
+    if (el) { el.style.left = n.x + 'px'; el.style.top = n.y + 'px'; }
+  });
+  renderEdges();
+}
+
+// ─── Export SVG ──────────────────────────────────────
+function exportSVG() {
+  if (!nodes.length) { alert('Add some nodes first!'); return; }
+  let minX=Infinity,minY=Infinity,maxX=0,maxY=0;
+  nodes.forEach(n => {
+    const el = document.getElementById('node-'+n.id);
+    const w  = el ? el.offsetWidth  : 160;
+    const h  = el ? el.offsetHeight :  60;
+    minX = Math.min(minX, n.x);
+    minY = Math.min(minY, n.y);
+    maxX = Math.max(maxX, n.x + w);
+    maxY = Math.max(maxY, n.y + h);
+  });
+  const pad = 40;
+  const vw  = maxX - minX + pad * 2;
+  const vh  = maxY - minY + pad * 2;
+
+  let svgStr = `<svg xmlns="http://www.w3.org/2000/svg" width="${vw}" height="${vh}" viewBox="${minX-pad} ${minY-pad} ${vw} ${vh}">`;
+  svgStr += `<defs><marker id="ah" markerWidth="8" markerHeight="6" refX="6" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#94A3B8"/></marker></defs>`;
+  svgStr += `<rect width="100%" height="100%" fill="#0F172A"/>`;
+
+  // Edges
+  edges.forEach(e => {
+    const a = getPortCenter(e.fromId, e.fromSide);
+    const b = getPortCenter(e.toId,   e.toSide);
+    const d = cubicPath(a, b, e.fromSide, e.toSide);
+    svgStr += `<path d="${d}" fill="none" stroke="#94A3B8" stroke-width="2" marker-end="url(#ah)"/>`;
+  });
+
+  // Nodes
+  nodes.forEach(n => {
+    const el  = document.getElementById('node-'+n.id);
+    const w   = el ? el.offsetWidth  : 160;
+    const h   = el ? el.offsetHeight :  60;
+    const def = NODE_DEFS[n.type] || NODE_DEFS.process;
+    const title = el ? el.querySelector('.node-title').textContent : n.label;
+    const sub   = el ? el.querySelector('.node-body').textContent  : n.sub;
+    const colors = { start:'#10B981', end:'#EF4444', decision:'#F59E0B', process:'#6366F1', data:'#06B6D4', delay:'#8B5CF6' };
+    const c = colors[n.type] || '#6366F1';
+    svgStr += `<rect x="${n.x}" y="${n.y}" width="${w}" height="${h}" rx="10" fill="#1E293B" stroke="${c}" stroke-width="2"/>`;
+    svgStr += `<text x="${n.x+10}" y="${n.y+22}" fill="#F1F5F9" font-family="sans-serif" font-size="11" font-weight="bold">${def.icon} ${title}</text>`;
+    svgStr += `<text x="${n.x+10}" y="${n.y+38}" fill="#94A3B8" font-family="sans-serif" font-size="9">${sub}</text>`;
+  });
+
+  svgStr += '</svg>';
+  const blob = new Blob([svgStr], {type:'image/svg+xml'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'flow-diagram.svg';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── Status ──────────────────────────────────────────
+function updateStatus() {
+  document.getElementById('node-count').textContent = nodes.length + ' node' + (nodes.length !== 1 ? 's' : '');
+  document.getElementById('edge-count').textContent = edges.length + ' connection' + (edges.length !== 1 ? 's' : '');
+}
+
+// ─── Keyboard ────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.contentEditable === 'true') return;
+  if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNodeId) {
+    ctxNodeId = selectedNodeId;
+    ctxDelete();
+  }
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.port.active').forEach(p => p.classList.remove('active'));
+    connectFrom = null;
+    hideCtxMenu();
+  }
+});
+
+document.addEventListener('click', hideCtxMenu);
+
+// ─── Seed Demo ───────────────────────────────────────
+(function seedDemo() {
+  const s  = createNode('start',    80,  60);
+  const p1 = createNode('process', 280,  60);
+  const d  = createNode('decision',480,  60);
+  const p2 = createNode('process', 680,  20);
+  const p3 = createNode('process', 680, 110);
+  const e  = createNode('end',     880,  60);
+
+  // Labels
+  const label = (id, t, s2) => {
+    const el = document.getElementById('node-' + id);
+    if (!el) return;
+    el.querySelector('.node-title').textContent = t;
+    el.querySelector('.node-body').textContent  = s2;
+  };
+  label(s.id,  'Start',         'Process begins');
+  label(p1.id, 'Receive Order', 'Log & validate');
+  label(d.id,  'In Stock?',     'Check inventory');
+  label(p2.id, 'Ship Order',    'Fulfill & dispatch');
+  label(p3.id, 'Back-order',    'Notify customer');
+  label(e.id,  'End',           'Process complete');
+
+  addEdge(s.id,  'right',  p1.id, 'left');
+  addEdge(p1.id, 'right',  d.id,  'left');
+  addEdge(d.id,  'right',  p2.id, 'left');
+  addEdge(d.id,  'bottom', p3.id, 'left');
+  addEdge(p2.id, 'right',  e.id,  'left');
+  addEdge(p3.id, 'right',  e.id,  'left');
+})();
+</script>
+</body>
+</html>
