@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Flow Builder — Showcase</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<style>
+  :root {
+    --p: #6366F1;
+    --p2: #818CF8;
+    --p3: #A5B4FC;
+    --acc: #10B981;
+    --acc2: #34D399;
+    --bg: #020617;
+    --bg2: #0F172A;
+    --bg3: #1E293B;
+    --txt: #F8FAFC;
+    --txt2: #94A3B8;
+    --node-start: #22C55E;
+    --node-process: #6366F1;
+    --node-decision: #F59E0B;
+    --node-data: #06B6D4;
+    --node-delay: #8B5CF6;
+    --node-end: #EF4444;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--txt);
+    overflow-x: hidden;
+    line-height: 1.6;
+  }
+  #cv { position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.25; }
+  section { position: relative; z-index: 1; }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center;
+    padding: 40px 24px;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(99,102,241,0.2) 0%, transparent 65%),
+                radial-gradient(ellipse 50% 40% at 90% 90%, rgba(16,185,129,0.1) 0%, transparent 55%);
+  }
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: rgba(99,102,241,.12); border: 1px solid rgba(99,102,241,.3);
+    border-radius: 100px; padding: 6px 18px;
+    font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--p3); margin-bottom: 32px; opacity: 0;
+  }
+  .hero-eyebrow::before { content: '◆'; font-size: 8px; color: var(--p2); }
+  .hero-title {
+    font-size: clamp(3rem, 9vw, 7.5rem);
+    font-weight: 900;
+    line-height: 1.02;
+    letter-spacing: -.03em;
+    opacity: 0;
+  }
+  .hero-title .line1 {
+    background: linear-gradient(135deg, #fff 0%, var(--p3) 60%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    display: block;
+  }
+  .hero-title .line2 {
+    background: linear-gradient(135deg, var(--p2) 0%, var(--acc2) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    display: block;
+  }
+  .hero-sub {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    color: var(--txt2); max-width: 540px;
+    margin: 20px auto 36px; opacity: 0;
+  }
+  .cta-row { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; opacity: 0; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 28px; border-radius: 12px; font-weight: 600; font-size: 15px;
+    text-decoration: none; border: none; cursor: pointer;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--p), #8B5CF6);
+    color: #fff; box-shadow: 0 8px 24px rgba(99,102,241,.4);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 16px 40px rgba(99,102,241,.55); }
+  .btn-ghost {
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12);
+    color: var(--txt2);
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,.09); }
+
+  /* ── VALUE STRIP ── */
+  .value-strip {
+    display: flex; justify-content: center; flex-wrap: wrap;
+    border-top: 1px solid rgba(255,255,255,.06);
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    background: rgba(255,255,255,.018);
+    padding: 40px 24px; gap: 0;
+  }
+  .vs-item {
+    flex: 1; min-width: 160px; max-width: 220px;
+    text-align: center; padding: 16px 20px;
+    border-right: 1px solid rgba(255,255,255,.06);
+    opacity: 0;
+  }
+  .vs-item:last-child { border-right: none; }
+  .vs-icon { font-size: 28px; margin-bottom: 8px; display: block; }
+  .vs-title { font-size: 14px; font-weight: 600; color: var(--txt); }
+  .vs-desc { font-size: 12px; color: var(--txt2); margin-top: 3px; }
+
+  /* ── CANVAS MOCKUP ── */
+  .canvas-section {
+    padding: 100px 24px;
+    display: flex; flex-direction: column; align-items: center; gap: 60px;
+  }
+  .section-sup { font-size: 12px; letter-spacing: .15em; text-transform: uppercase; color: var(--p2); margin-bottom: 10px; }
+  .section-title { font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 800; letter-spacing: -.02em; text-align: center; }
+  .section-title em { font-style: normal; color: var(--p3); }
+
+  .canvas-wrap {
+    width: 100%; max-width: 960px;
+    background: rgba(255,255,255,.025); border: 1px solid rgba(255,255,255,.07);
+    border-radius: 20px; overflow: hidden;
+    box-shadow: 0 40px 80px rgba(0,0,0,.6);
+    opacity: 0; transform: translateY(40px);
+  }
+  .toolbar {
+    background: rgba(255,255,255,.045); padding: 12px 20px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .tb-dots { display: flex; gap: 6px; }
+  .tb-dots span { width: 12px; height: 12px; border-radius: 50%; }
+  .tb-dots span:nth-child(1) { background: #FF5F57; }
+  .tb-dots span:nth-child(2) { background: #FEBC2E; }
+  .tb-dots span:nth-child(3) { background: #28C840; }
+  .tb-title {
+    flex: 1; text-align: center; font-size: 13px; font-weight: 600;
+    color: var(--txt2); font-family: 'JetBrains Mono', monospace;
+  }
+  .tb-btns { display: flex; gap: 6px; }
+  .tb-btn {
+    background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+    border-radius: 6px; padding: 4px 10px; font-size: 11px; color: var(--txt2);
+  }
+
+  /* The canvas area */
+  .canvas-area {
+    display: flex; height: 440px; background: var(--bg2);
+    background-image: radial-gradient(rgba(99,102,241,.08) 1px, transparent 1px);
+    background-size: 24px 24px;
+    position: relative; overflow: hidden;
+  }
+
+  /* Side panel */
+  .side-panel {
+    width: 140px; flex-shrink: 0;
+    background: rgba(255,255,255,.03); border-right: 1px solid rgba(255,255,255,.06);
+    padding: 14px 10px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .sp-label { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--txt2); margin-bottom: 4px; }
+  .sp-node {
+    border: 1.5px solid; border-radius: 7px; padding: 6px 8px;
+    font-size: 11px; font-weight: 600; display: flex; align-items: center; gap: 6px;
+    cursor: grab;
+  }
+  .sp-node.start  { border-color: var(--node-start);  color: var(--node-start);  background: rgba(34,197,94,.08); }
+  .sp-node.proc   { border-color: var(--node-process); color: var(--node-process);background: rgba(99,102,241,.08); }
+  .sp-node.dec    { border-color: var(--node-decision);color: var(--node-decision);background:rgba(245,158,11,.08); }
+  .sp-node.data   { border-color: var(--node-data);    color: var(--node-data);   background: rgba(6,182,212,.08); }
+  .sp-node.delay  { border-color: var(--node-delay);   color: var(--node-delay);  background: rgba(139,92,246,.08); }
+  .sp-node.end    { border-color: var(--node-end);     color: var(--node-end);    background: rgba(239,68,68,.08); }
+
+  /* Flow diagram inside canvas */
+  .diagram {
+    flex: 1; position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* SVG arrows */
+  .flow-svg { position: absolute; inset: 0; pointer-events: none; }
+
+  /* Nodes */
+  .fn-node {
+    position: absolute; border-radius: 10px; padding: 10px 14px;
+    font-size: 12px; font-weight: 600; white-space: nowrap;
+    border: 1.5px solid; display: flex; flex-direction: column; align-items: center;
+    gap: 2px; cursor: pointer; min-width: 110px; text-align: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,.3);
+    opacity: 0;
+  }
+  .fn-node .n-label { font-size: 10px; font-weight: 500; opacity: .7; }
+  .fn-start  { border-color:var(--node-start);  color:var(--node-start);  background:rgba(34,197,94,.12);  left:40px;  top:170px; }
+  .fn-check  { border-color:var(--node-process);color:var(--node-process);background:rgba(99,102,241,.12); left:180px; top:90px;  }
+  .fn-valid  { border-color:var(--node-decision);color:var(--node-decision);background:rgba(245,158,11,.1);left:350px; top:90px; }
+  .fn-reject { border-color:var(--node-end);    color:var(--node-end);    background:rgba(239,68,68,.1);   left:350px; top:250px; }
+  .fn-approve{ border-color:var(--node-process);color:var(--node-process);background:rgba(99,102,241,.12); left:530px; top:90px; }
+  .fn-notify { border-color:var(--node-data);   color:var(--node-data);   background:rgba(6,182,212,.1);   left:530px; top:250px; }
+  .fn-end    { border-color:var(--node-end);    color:var(--node-end);    background:rgba(239,68,68,.12);  left:690px; top:170px;}
+
+  /* ── NODE TYPES ── */
+  .types-section { padding: 80px 24px; max-width: 960px; margin: 0 auto; }
+  .types-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px; margin-top: 56px;
+  }
+  .type-card {
+    background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
+    border-radius: 14px; padding: 22px;
+    display: flex; align-items: flex-start; gap: 16px;
+    opacity: 0; transform: translateY(20px);
+    transition: border-color .3s, transform .3s;
+  }
+  .type-card:hover { transform: translateY(-3px) !important; }
+  .type-swatch {
+    width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+    border: 2px solid; display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .type-info h4 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .type-info p  { font-size: 13px; color: var(--txt2); line-height: 1.5; }
+
+  /* ── CONTROLS ── */
+  .controls-section { padding: 80px 24px; max-width: 900px; margin: 0 auto; }
+  .controls-table {
+    width: 100%; margin-top: 40px; border-collapse: collapse;
+    opacity: 0; transform: translateY(20px);
+  }
+  .controls-table th, .controls-table td {
+    padding: 12px 16px; text-align: left; border-bottom: 1px solid rgba(255,255,255,.06);
+    font-size: 13px;
+  }
+  .controls-table th { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--txt2); }
+  .controls-table td:first-child { font-family: 'JetBrains Mono', monospace; color: var(--p3); font-size: 12px; }
+  .controls-table tr:last-child td { border-bottom: none; }
+
+  /* ── CODE SECTION ── */
+  .code-section { padding: 80px 24px; max-width: 800px; margin: 0 auto; }
+  .code-block {
+    background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
+    border-radius: 16px; overflow: hidden;
+    opacity: 0; transform: translateY(30px);
+  }
+  .code-header {
+    background: rgba(255,255,255,.05); padding: 12px 20px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+  }
+  .c-dots { display: flex; gap: 6px; }
+  .c-dots span { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.15); }
+  .code-lang { font-size: 11px; color: var(--txt2); font-family: 'JetBrains Mono', monospace; letter-spacing: .1em; text-transform: uppercase; }
+  pre { padding: 24px; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.8; overflow-x: auto; color: #CBD5E1; }
+  .kw { color: #818CF8; } .fn { color: #38BDF8; } .str { color: #34D399; }
+  .cm { color: #475569; font-style: italic; } .num { color: #FB923C; }
+
+  /* ── TECH CHIPS ── */
+  .tech-section { padding: 80px 24px; text-align: center; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 40px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+    border-radius: 100px; padding: 8px 18px; font-size: 13px; font-weight: 500;
+    opacity: 0; transform: scale(.85);
+  }
+  .chip-dot { width: 7px; height: 7px; border-radius: 50%; }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 60px 24px; text-align: center;
+    border-top: 1px solid rgba(255,255,255,.06);
+    color: var(--txt2); font-size: 14px;
+  }
+  footer a { color: var(--p3); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  .footer-name { font-size: 20px; font-weight: 700; color: var(--txt); margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">Business Process Flow Builder</div>
+  <h1 class="hero-title">
+    <span class="line1">Drag. Drop.</span>
+    <span class="line2">Connect. Export.</span>
+  </h1>
+  <p class="hero-sub">One self-contained HTML file. Six node types. Cubic Bézier arrows. SVG export. No npm install. No account.</p>
+  <div class="cta-row">
+    <a href="https://github.com/layankhayyat04-ui/business-process-flow-builder" class="btn btn-primary">⭐ View on GitHub</a>
+    <a href="#nodes" class="btn btn-ghost">Explore Nodes</a>
+  </div>
+</section>
+
+<!-- VALUE STRIP -->
+<div class="value-strip">
+  <div class="vs-item vsi"><span class="vs-icon">🗂️</span><div class="vs-title">1 HTML File</div><div class="vs-desc">~900 lines, zero deps</div></div>
+  <div class="vs-item vsi"><span class="vs-icon">🔗</span><div class="vs-title">Port State Machine</div><div class="vs-desc">Two clicks to connect</div></div>
+  <div class="vs-item vsi"><span class="vs-icon">📐</span><div class="vs-title">Cubic Bézier Arrows</div><div class="vs-desc">Any port → any port</div></div>
+  <div class="vs-item vsi"><span class="vs-icon">🔍</span><div class="vs-title">Zoom + Pan</div><div class="vs-desc">Scroll to zoom, Shift-drag to pan</div></div>
+  <div class="vs-item vsi"><span class="vs-icon">💾</span><div class="vs-title">SVG Export</div><div class="vs-desc">Self-contained vector file</div></div>
+</div>
+
+<!-- CANVAS MOCKUP -->
+<section class="canvas-section">
+  <div>
+    <p class="section-sup">Live Preview</p>
+    <h2 class="section-title">A real <em>diagram</em> in seconds</h2>
+  </div>
+
+  <div class="canvas-wrap" id="mockup">
+    <div class="toolbar">
+      <div class="tb-dots"><span></span><span></span><span></span></div>
+      <div class="tb-title">index.html — Business Process Flow Builder</div>
+      <div class="tb-btns">
+        <span class="tb-btn">Auto-Layout</span>
+        <span class="tb-btn">Export SVG</span>
+      </div>
+    </div>
+    <div class="canvas-area">
+      <!-- Side panel -->
+      <div class="side-panel">
+        <div class="sp-label">Nodes</div>
+        <div class="sp-node start">● Start</div>
+        <div class="sp-node proc">▭ Process</div>
+        <div class="sp-node dec">◆ Decision</div>
+        <div class="sp-node data">▱ Data</div>
+        <div class="sp-node delay">⏱ Delay</div>
+        <div class="sp-node end">● End</div>
+      </div>
+
+      <!-- Diagram -->
+      <div class="diagram">
+        <!-- SVG arrows -->
+        <svg class="flow-svg" viewBox="0 0 760 440" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="rgba(99,102,241,0.7)"/>
+            </marker>
+            <marker id="arr-r" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="rgba(239,68,68,0.7)"/>
+            </marker>
+            <marker id="arr-g" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L0,6 L8,3 z" fill="rgba(34,197,94,0.6)"/>
+            </marker>
+          </defs>
+          <!-- start → check -->
+          <path d="M155,193 C200,193 160,120 215,120" stroke="rgba(99,102,241,0.5)" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+          <!-- check → valid -->
+          <path d="M300,120 C325,120 325,120 350,120" stroke="rgba(99,102,241,0.5)" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+          <!-- valid → reject (No) -->
+          <path d="M415,155 C415,200 415,240 415,270" stroke="rgba(239,68,68,0.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-r)"/>
+          <!-- valid → approve (Yes) -->
+          <path d="M490,120 C510,120 510,120 530,120" stroke="rgba(34,197,94,0.5)" stroke-width="1.5" fill="none" marker-end="url(#arr-g)"/>
+          <!-- approve → end -->
+          <path d="M650,120 C680,120 690,150 690,193" stroke="rgba(99,102,241,0.5)" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+          <!-- reject → notify -->
+          <path d="M490,280 C510,280 510,280 530,280" stroke="rgba(6,182,212,0.5)" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+          <!-- notify → end -->
+          <path d="M650,280 C680,280 690,250 690,220" stroke="rgba(99,102,241,0.5)" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+          <!-- arrow labels -->
+          <text x="405" y="196" font-size="9" fill="rgba(239,68,68,0.8)" font-family="Inter,sans-serif" font-weight="600">No</text>
+          <text x="497" y="112" font-size="9" fill="rgba(34,197,94,0.8)" font-family="Inter,sans-serif" font-weight="600">Yes</text>
+        </svg>
+
+        <!-- Nodes -->
+        <div class="fn-node fn-start"  id="n1">Start<div class="n-label">entry point</div></div>
+        <div class="fn-node fn-check"  id="n2">Validate Form<div class="n-label">process</div></div>
+        <div class="fn-node fn-valid"  id="n3">Valid?<div class="n-label">decision</div></div>
+        <div class="fn-node fn-reject" id="n4">Reject<div class="n-label">end</div></div>
+        <div class="fn-node fn-approve"id="n5">Approve<div class="n-label">process</div></div>
+        <div class="fn-node fn-notify" id="n6">Notify User<div class="n-label">data I/O</div></div>
+        <div class="fn-node fn-end"    id="n7">Done<div class="n-label">end</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NODE TYPES -->
+<section class="types-section" id="nodes">
+  <div style="text-align:center">
+    <p class="section-sup">Node Types</p>
+    <h2 class="section-title">Six shapes, <em>every flow covered</em></h2>
+  </div>
+  <div class="types-grid">
+    <div class="type-card tc" style="--c:var(--node-start)">
+      <div class="type-swatch" style="border-color:var(--node-start);color:var(--node-start);background:rgba(34,197,94,.1)">●</div>
+      <div class="type-info"><h4 style="color:var(--node-start)">Start</h4><p>Entry point for the process. Only one per flow. Bright green — immediately visible.</p></div>
+    </div>
+    <div class="type-card tc" style="--c:var(--node-process)">
+      <div class="type-swatch" style="border-color:var(--node-process);color:var(--node-process);background:rgba(99,102,241,.1)">▭</div>
+      <div class="type-info"><h4 style="color:var(--node-process)">Process</h4><p>Any action or task. The most common node — drag several onto the canvas to map a workflow.</p></div>
+    </div>
+    <div class="type-card tc" style="--c:var(--node-decision)">
+      <div class="type-swatch" style="border-color:var(--node-decision);color:var(--node-decision);background:rgba(245,158,11,.1)">◆</div>
+      <div class="type-info"><h4 style="color:var(--node-decision)">Decision</h4><p>Yes / No branch. Two outgoing ports route the flow based on a condition.</p></div>
+    </div>
+    <div class="type-card tc" style="--c:var(--node-data)">
+      <div class="type-swatch" style="border-color:var(--node-data);color:var(--node-data);background:rgba(6,182,212,.1)">▱</div>
+      <div class="type-info"><h4 style="color:var(--node-data)">Data</h4><p>Input / output step. Use when the flow reads from or writes to a system, file, or API.</p></div>
+    </div>
+    <div class="type-card tc" style="--c:var(--node-delay)">
+      <div class="type-swatch" style="border-color:var(--node-delay);color:var(--node-delay);background:rgba(139,92,246,.1)">⏱</div>
+      <div class="type-info"><h4 style="color:var(--node-delay)">Delay</h4><p>Wait state — approval queue, timer, SLA window. Violet draws the eye to latency points.</p></div>
+    </div>
+    <div class="type-card tc" style="--c:var(--node-end)">
+      <div class="type-swatch" style="border-color:var(--node-end);color:var(--node-end);background:rgba(239,68,68,.1)">●</div>
+      <div class="type-info"><h4 style="color:var(--node-end)">End</h4><p>Terminator. Multiple ends are fine for different outcomes (approve, reject, timeout).</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTROLS TABLE -->
+<section class="controls-section">
+  <div style="text-align:center">
+    <p class="section-sup">Controls</p>
+    <h2 class="section-title">Every shortcut, <em>one table</em></h2>
+  </div>
+  <table class="controls-table" id="ctable">
+    <thead><tr><th>Action</th><th>How</th></tr></thead>
+    <tbody>
+      <tr><td>Add a node</td><td>Drag from left panel onto canvas</td></tr>
+      <tr><td>Move a node</td><td>Click and drag</td></tr>
+      <tr><td>Connect nodes</td><td>Click source port → click target port</td></tr>
+      <tr><td>Edit label</td><td>Double-click node title (contenteditable)</td></tr>
+      <tr><td>Delete node</td><td>Right-click → Delete, or <kbd>Delete</kbd> key</td></tr>
+      <tr><td>Delete arrow</td><td>Double-click the arrow line</td></tr>
+      <tr><td>Duplicate node</td><td>Right-click → Duplicate</td></tr>
+      <tr><td>Pan canvas</td><td><kbd>Shift</kbd> + drag background</td></tr>
+      <tr><td>Zoom</td><td>Scroll wheel</td></tr>
+      <tr><td>Auto-layout</td><td>Toolbar button — grid arrangement</td></tr>
+      <tr><td>Export SVG</td><td>Toolbar button — self-contained .svg</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- CODE SECTION -->
+<section class="code-section">
+  <div class="code-block" id="codeblock">
+    <div class="code-header">
+      <div class="c-dots"><span></span><span></span><span></span></div>
+      <span class="code-lang">JavaScript · Bézier routing</span>
+    </div>
+<pre><span class="cm">// Smooth S-curve from any port to any port</span>
+<span class="kw">function</span> <span class="fn">cubicPath</span>(a, b, aS, bS) {
+  <span class="kw">const</span> d = <span class="num">80</span>; <span class="cm">// control-point offset px</span>
+  <span class="kw">let</span> c1x=a.x, c1y=a.y, c2x=b.x, c2y=b.y;
+
+  <span class="cm">// Source port pushes its control point outward</span>
+  <span class="kw">if</span> (aS === <span class="str">'right'</span>)  c1x += d;
+  <span class="kw">if</span> (aS === <span class="str">'left'</span>)   c1x -= d;
+  <span class="kw">if</span> (aS === <span class="str">'bottom'</span>) c1y += d;
+  <span class="kw">if</span> (aS === <span class="str">'top'</span>)    c1y -= d;
+
+  <span class="cm">// Target port pulls its control point outward</span>
+  <span class="kw">if</span> (bS === <span class="str">'right'</span>)  c2x += d;
+  <span class="kw">if</span> (bS === <span class="str">'left'</span>)   c2x -= d;
+  <span class="kw">if</span> (bS === <span class="str">'bottom'</span>) c2y += d;
+  <span class="kw">if</span> (bS === <span class="str">'top'</span>)    c2y -= d;
+
+  <span class="kw">return</span> `M${a.x},${a.y} C${c1x},${c1y} ${c2x},${c2y} ${b.x},${b.y}`;
+}</pre>
+  </div>
+</section>
+
+<!-- TECH STACK -->
+<section class="tech-section">
+  <p class="section-sup">Stack</p>
+  <h2 class="section-title">Zero <em>dependencies</em></h2>
+  <div class="chips">
+    <span class="chip tc2"><span class="chip-dot" style="background:#F97316"></span>HTML5</span>
+    <span class="chip tc2"><span class="chip-dot" style="background:#3B82F6"></span>CSS3</span>
+    <span class="chip tc2"><span class="chip-dot" style="background:#EAB308"></span>Vanilla JS</span>
+    <span class="chip tc2"><span class="chip-dot" style="background:#22C55E"></span>SVG</span>
+    <span class="chip tc2"><span class="chip-dot" style="background:#6366F1"></span>No npm</span>
+    <span class="chip tc2"><span class="chip-dot" style="background:#EC4899"></span>No build step</span>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-name">Layan Khayyat</div>
+  <p>A diagramming tool that lives in one file · Open it. No install. No account.</p>
+  <br>
+  <p>
+    <a href="https://layankhayyat.com">🌐 Portfolio</a> &nbsp;·&nbsp;
+    <a href="https://github.com/layankhayyat04-ui">GitHub</a> &nbsp;·&nbsp;
+    <a href="https://linkedin.com/in/layankhayyat">LinkedIn</a>
+  </p>
+</footer>
+
+<script>
+// ── PARTICLE CANVAS ──
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let W, H, pts = [];
+
+function resize(){ W = cv.width = innerWidth; H = cv.height = innerHeight; }
+window.addEventListener('resize', resize); resize();
+
+for(let i=0;i<60;i++){
+  pts.push({
+    x: Math.random()*W, y: Math.random()*H,
+    vx: (Math.random()-.5)*.4, vy: (Math.random()-.5)*.4,
+    r: Math.random()*2+1,
+    c: Math.random()>.4 ? '99,102,241' : '139,92,246'
+  });
+}
+
+(function draw(){
+  ctx.clearRect(0,0,W,H);
+  for(let i=0;i<pts.length;i++){
+    const a=pts[i];
+    a.x+=a.vx; a.y+=a.vy;
+    if(a.x<0||a.x>W) a.vx*=-1;
+    if(a.y<0||a.y>H) a.vy*=-1;
+    ctx.beginPath(); ctx.arc(a.x,a.y,a.r,0,Math.PI*2);
+    ctx.fillStyle=`rgba(${a.c},0.6)`; ctx.fill();
+    for(let j=i+1;j<pts.length;j++){
+      const b=pts[j], d=Math.hypot(a.x-b.x,a.y-b.y);
+      if(d<110){
+        ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
+        ctx.strokeStyle=`rgba(99,102,241,${(1-d/110)*.2})`; ctx.lineWidth=.5; ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(draw);
+})();
+
+// ── ANIME ENTRANCE ──
+const tl = anime.timeline({ easing: 'easeOutExpo' });
+tl.add({ targets: '.hero-eyebrow', opacity:[0,1], translateY:[12,0], duration:600 })
+  .add({ targets: '.hero-title',   opacity:[0,1], translateY:[40,0], duration:900 }, '-=300')
+  .add({ targets: '.hero-sub',     opacity:[0,1], translateY:[25,0], duration:700 }, '-=500')
+  .add({ targets: '.cta-row',      opacity:[0,1], translateY:[20,0], duration:600 }, '-=400')
+  .add({ targets: '.vs-item',      opacity:[0,1], translateY:[15,0], duration:500, delay: anime.stagger(70) }, '-=200');
+
+// ── SCROLL REVEALS ──
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(!e.isIntersecting) return;
+    const el = e.target;
+    if(el.id==='mockup'){
+      anime({ targets: el, opacity:[0,1], translateY:[40,0], duration:900, easing:'easeOutExpo' });
+      // stagger nodes in
+      anime({ targets: '.fn-node', opacity:[0,1], scale:[0.7,1], duration:600, delay: anime.stagger(80), easing:'easeOutBack' });
+    } else if(el.classList.contains('tc')){
+      anime({ targets: el, opacity:[0,1], translateY:[20,0], duration:600, easing:'easeOutExpo' });
+    } else if(el.id==='ctable'){
+      anime({ targets: el, opacity:[0,1], translateY:[20,0], duration:700, easing:'easeOutExpo' });
+    } else if(el.id==='codeblock'){
+      anime({ targets: el, opacity:[0,1], translateY:[30,0], duration:800, easing:'easeOutExpo' });
+    } else if(el.classList.contains('tc2')){
+      anime({ targets: el, opacity:[0,1], scale:[0.8,1], duration:500, easing:'easeOutBack' });
+    }
+    io.unobserve(el);
+  });
+}, { threshold: 0.12 });
+
+document.querySelectorAll('#mockup,.type-card,#ctable,#codeblock,.chip').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

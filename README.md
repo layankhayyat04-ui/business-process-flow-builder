@@ -1,5 +1,15 @@
 <div align="center">
 
+<a href="./showcase.html">
+<img src="https://img.shields.io/badge/%E2%9C%A8%20Live%20Showcase-6366F1?style=for-the-badge&logoColor=white" height="36"/>
+</a>
+
+</div>
+
+<br/>
+
+<div align="center">
+
 <img src="https://capsule-render.vercel.app/api?type=shark&color=0:0F0C29,50:302B63,100:24243E&height=220&section=header&text=Flow%20Builder&fontSize=80&fontColor=818CF8&fontAlignY=55&desc=Drag.%20Drop.%20Connect.%20Export.%20%E2%80%94%20Zero%20dependencies.&descSize=17&descAlignY=75&descFontColor=C7D2FE&animation=twinkling&reversal=false" width="100%"/>
 
 </div>
